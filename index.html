@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <script type="text/javascript" src="jquery-1.9.1.js"></script>
+  <script type="text/javascript" src="jquery-ui.js"></script>
+
+  <link  href="/cropperjs/cropper.min.css" rel="stylesheet">
+<script src="/cropperjs/cropper.min.js"></script>
+
+</head>
+
+<body>
+
+  <img src="images/timg.jpg" id="image">
+
+  <script type="text/javascript">
+  var image = document.getElementById('image');
+  var queue = [];
+  var running = false;
+var cropper = new Cropper(image, {
+aspectRatio: 16 / 9,
+crop: function(event) {
+  console.log('event.detail.x', event.detail.x);
+  console.log('event.detail.y', event.detail.y);
+  console.log('event.detail.width', event.detail.width);
+  console.log('event.detail.height', event.detail.height);
+  console.log('event.detail.rotate', event.detail.rotate);
+  console.log('event.detail.scaleX', event.detail.scaleX);
+  console.log('event.detail.scaleY', event.detail.scaleY);
+
+  $('#left').val(event.detail.x)
+  $('#top').val(event.detail.y)
+  $('#width').val(event.detail.width)
+  $('#height').val(event.detail.height)
+  var data  ={
+    crop_image:1,
+    left:event.detail.x,
+    top:event.detail.y,
+    width:event.detail.width,
+    height:event.detail.height,
+  };
+  queue.push(data);
+  console.log(queue);
+  var preview_crop_image = function () {
+    if (!running) {
+      if (queue) {
+        running = true;
+        console.log(queue.length);
+        var data = queue[queue.length-1];
+        queue = [];
+        console.log(data);
+        $.post('do_crop.php', data, function (ret) {
+          $('.preview-crop img').attr('src', ret);
+          running = false;
+          setTimeout(function () {
+            console.log('remain', queue);
+            if (queue.length > 0) preview_crop_image();
+          }, 1);
+        });
+      }
+    }
+  }
+  preview_crop_image();
+}
+});
+  </script>
+
+<div class="preview-crop">
+  <h2>预览</h2>
+  <img src="" alt="">
+</div>
+
+</body>
+</html>
